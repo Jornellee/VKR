@@ -1,0 +1,152 @@
+[
+  {
+    "discipline_verbose": "Гибкие методологии реализации проектов",
+    "groups": [464437, 464438, 464439],
+    "teachers": [4559],
+    "nt": 1,
+    "day": [6, 12],
+    "para": [4, 8],
+    "everyweek": [1, 1],
+    "schedule_id": [32135099, 32337001]
+  },
+  {
+    "discipline_verbose": "Гибкие методологии реализации проектов",
+    "groups": [464439],
+    "teachers": [4559],
+    "nt": 3,
+    "day": [6, 6],
+    "para": [5, 7],
+    "everyweek": [2, 2],
+    "schedule_id": [32135096, 32336998]
+  },
+  {
+    "discipline_verbose": "Интеллектуальные системы и технологии",
+    "groups": [464438, 464439],
+    "teachers": [1589],
+    "nt": 1,
+    "day": [2, 2],
+    "para": [3, 3],
+    "everyweek": [2, 2],
+    "schedule_id": [32136430, 32338333]
+  },
+  {
+    "discipline_verbose": "Интеллектуальные системы и технологии",
+    "groups": [464439],
+    "teachers": [3925],
+    "nt": 3,
+    "day": [4, 4],
+    "para": [5, 5],
+    "everyweek": [2, 2],
+    "schedule_id": [32136427, 32338330]
+  },
+  {
+    "discipline_verbose": "Корпоративные информационные системы",
+    "groups": [464437, 464438, 464439],
+    "teachers": [784],
+    "nt": 1,
+    "day": [3, 3],
+    "para": [4, 4],
+    "everyweek": [1, 1],
+    "schedule_id": [32137071, 32338975]
+  },
+  {
+    "discipline_verbose": "Корпоративные информационные системы",
+    "groups": [464439],
+    "teachers": [784],
+    "nt": 3,
+    "day": [4, 4],
+    "para": [4, 4],
+    "everyweek": [2, 2],
+    "schedule_id": [32137068, 32338972]
+  },
+  {
+    "discipline_verbose": "Основы СППР",
+    "groups": [464438, 464439],
+    "teachers": [1589],
+    "nt": 1,
+    "day": [10, 10],
+    "para": [4, 4],
+    "everyweek": [1, 1],
+    "schedule_id": [32138392, 32340298]
+  },
+  {
+    "discipline_verbose": "Основы СППР",
+    "groups": [464439],
+    "teachers": [3925],
+    "nt": 3,
+    "day": [2, 2],
+    "para": [4, 4],
+    "everyweek": [2, 2],
+    "schedule_id": [32138390, 32340296]
+  },
+  {
+    "discipline_verbose": "Проектирование информационных систем",
+    "groups": [464438, 464439],
+    "teachers": [1055],
+    "nt": 1,
+    "day": [5, 5],
+    "para": [4, 4],
+    "everyweek": [2, 2],
+    "schedule_id": [32139475, 32341381]
+  },
+  {
+    "discipline_verbose": "Проектирование информационных систем",
+    "groups": [464439],
+    "teachers": [2371],
+    "nt": 3,
+    "day": [5, 5],
+    "para": [5, 5],
+    "everyweek": [2, 2],
+    "schedule_id": [32139470, 32341376]
+  },
+  {
+    "discipline_verbose": "Тестирование безопасности информационных систем",
+    "groups": [464438, 464439],
+    "teachers": [4467],
+    "nt": 1,
+    "day": [5, 5],
+    "para": [3, 3],
+    "everyweek": [1, 1],
+    "schedule_id": [32140714, 32342651]
+  },
+  {
+    "discipline_verbose": "Тестирование безопасности информационных систем",
+    "groups": [464439],
+    "teachers": [4739],
+    "nt": 3,
+    "day": [4, 4],
+    "para": [3, 3],
+    "everyweek": [1, 1],
+    "schedule_id": [32140712, 32342649]
+  },
+  {
+    "discipline_verbose": "Управление проектами",
+    "groups": [464438, 464439],
+    "teachers": [4090],
+    "nt": 1,
+    "day": [3, 3],
+    "para": [3, 3],
+    "everyweek": [2, 2],
+    "schedule_id": [32141232, 32343171]
+  },
+  {
+    "discipline_verbose": "Управление проектами",
+    "groups": [464439],
+    "teachers": [4090],
+    "nt": 2,
+    "day": [3, 3],
+    "para": [5, 5],
+    "everyweek": [1, 1],
+    "schedule_id": [32141223, 32343162]
+  },
+  {
+    "discipline_verbose": "Физическая культура и спорт",
+    "groups": [464770, 464172, 464437, 464438, 464439],
+    "teachers": [4726],
+    "nt": 1,
+    "day": [11, 11],
+    "para": [3, 3],
+    "everyweek": [1, 1],
+    "schedule_id": [32141636, 32343575]
+  }
+]

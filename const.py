@@ -7,7 +7,7 @@ import re
 bot = telebot.TeleBot("5742810421:AAHtH3-j6keBuiceiV640-D6varvokAs2Ds", parse_mode=None)
 # bot.send_message (a,"Привет") 
 
-DATABASE_URI = 'postgresql://postgres:123@localhost:5432/schedule'
+DATABASE_URI = 'postgresql://postgres:123@localhost:5432/schedule new'
 engine = db.create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)
 
