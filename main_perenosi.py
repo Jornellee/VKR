@@ -58,7 +58,7 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
 
         # рассылаем сообщения об переносах студентам
         for user_id in telegram_ids:
-            message = '	&#128221;' "<b>Сообщение о переносе для группы: </b>" '&#10024;' + " \n".join(perenosi) # склейка сообщений в одно сообщение
+            message = '	&#128308;' "<b>Сообщение о переносе для группы: </b>" '&#128221;' + " \n".join(perenosi) # склейка сообщений в одно сообщение
             bot.send_message (user_id, message, parse_mode='HTML')
 
     for teacher_id in teachers_info:
@@ -68,7 +68,7 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
 
         # рассылаем сообщения об переносах преподавателям
         for user_id in telegram_ids:
-            message = '	&#128221;' "<b>Сообщение о переносе для преподавателя: </b>" '&#10024;' + " \n".join(perenosi)
+            message = '	&#128308;' "<b>Сообщение о переносе для преподавателя: </b>" '&#128221;' + " \n".join(perenosi)
             bot.send_message (user_id, message, parse_mode='HTML')
 
 

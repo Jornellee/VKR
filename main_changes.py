@@ -4,7 +4,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
 
-from const import GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot
+from const import GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot
 
 TAG_RE = re.compile(r'<[^>]+>')
 
@@ -15,7 +15,7 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     # сессия - сеанс подключения к БД
     s = Session()
 
-    # запускаем скрипт (запрос чтобы вытащить переносы)
+    # запускаем скрипт (показывает когда было/стало)
     rows = s.execute(f"""
    SELECT discipline_verbose
     , groups as groups_id
@@ -27,35 +27,36 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     , array_agg(schedule_id ORDER BY dbeg, everyweek, day, para) as schedule_id
     FROM schedule_v2
     WHERE dbeg in ('2022.09.26', '2022.10.03')
-    and 464289 = any (groups)
+    and 464439 = any (groups)
     and type = 'day'
     GROUP BY discipline_verbose, groups, teachers, nt
     """)
+
+    rows = list(rows)
 
     for r in rows:
         if r['day'][0] != r['day'][1]:
             print(r)
 
-
     groups_info = {}
-    ##teachers_info = {}
-
-    rows = list(rows)
-
+    teachers_info = {}
+    
     for row in rows:
         # надо сделать цикл по groups_id чтобы учитывал все группы которые в groups_id
         if row.groups_id[0] not in groups_info: # проверяем есть ли group_id в словарике groups_info
             groups_info[row.groups_id[0]] = [] # если нет то инициализируем пустым списком
         
-        # добавляем сообщение о переносе группе 
-        groups_info[row.groups_id[0]].append(remove_tags(row.discipline_verbose))
+        # добавляем сообщение об изменениях группе 
+        if row.day[0] != row.day[1] or row.para[0] != row.para[1] or row.everyweek[0] != row.everyweek[1]:
+            pprint (row)
+            groups_info[row.groups_id[0]].append(row)
 
-    '''for row in rows:
+    for row in rows:
         if row.teachers[0] not in teachers_info:
             teachers_info[row.teachers[0]] = []
 
-        # добавляем сообщение о переносе преподавателю 
-        teachers_info [row.teachers[0]].append(remove_tags(row.discipline_verbose))'''
+        # добавляем сообщение об изменениях преподавателю 
+        teachers_info [row.teachers[0]].append(row)
 
 
 
@@ -74,7 +75,27 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
 
         # рассылаем сообщения об изменениях студентам
         for user_id in telegram_ids:
-            message = '	&#128221;' "<b>Сообщение об изменениях для группы: </b>" '&#10024;' + " \n".join(changes) # склейка сообщений в одно сообщение
+
+            real_changes = [] 
+            for row in changes: 
+                text = row.discipline_verbose
+
+                if row.day[0] != row.day[1]: 
+                    text += f'\n ---- Перенос дня с  {row.day[0]} на {row.day[1]}'
+
+                if row.para[0] != row.para[1]: 
+                    text += f'\n ---- Перенос пары с {PARAS[row.para[0]]} на {PARAS[row.para[1]]}'
+
+                if row.everyweek[0] != row.everyweek[1]: 
+                    if row.everyweek[1] == 2:
+                        text += f'\n ---- Пара стала еженедельной'
+                    if row.everyweek[1] == 1:
+                        text += f'\n ---- Пара стала через неделю'
+
+
+                real_changes.append(text)
+            
+            message = f' &#128309; <b>Сообщение об изменениях для группы:</b>\n&#10024; {", ".join(real_changes)}'  # склейка сообщений в одно сообщение
             bot.send_message (user_id, message, parse_mode='HTML')
 
     '''for teacher_id in teachers_info:
@@ -84,7 +105,7 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
 
         # рассылаем сообщения об изменениях преподавателям
         for user_id in telegram_ids:
-            message = '	&#128221;' "<b>Сообщение об изменениях для преподавателя: </b>" '&#10024;' + " \n".join(changes)
+            message = '	&#128309;' "<b>Сообщение об изменениях для преподавателя: </b>" '&#10024;' + " \n".join(changes)
             bot.send_message (user_id, message, parse_mode='HTML')'''
 
 
