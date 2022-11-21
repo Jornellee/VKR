@@ -4,7 +4,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
 
-from const import GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot
+from const import DAYS, GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, check
 
 TAG_RE = re.compile(r'<[^>]+>')
 
@@ -42,12 +42,11 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     teachers_info = {}
     
     for row in rows:
-        # надо сделать цикл по groups_id чтобы учитывал все группы которые в groups_id
         if row.groups_id[0] not in groups_info: # проверяем есть ли group_id в словарике groups_info
             groups_info[row.groups_id[0]] = [] # если нет то инициализируем пустым списком
         
         # добавляем сообщение об изменениях группе 
-        if row.day[0] != row.day[1] or row.para[0] != row.para[1] or row.everyweek[0] != row.everyweek[1]:
+        if not check(row.day) or not check(row.para) or not check(row.everyweek):
             pprint (row)
             groups_info[row.groups_id[0]].append(row)
 
@@ -55,8 +54,10 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
         if row.teachers[0] not in teachers_info:
             teachers_info[row.teachers[0]] = []
 
-        # добавляем сообщение об изменениях преподавателю 
-        teachers_info [row.teachers[0]].append(row)
+        # добавляем сообщение об изменениях преподавателю
+        if not check(row.day) or not check(row.para) or not check(row.everyweek):
+            pprint (row) 
+            teachers_info [row.teachers[0]].append(row)
 
 
 
@@ -80,13 +81,13 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
             for row in changes: 
                 text = row.discipline_verbose
 
-                if row.day[0] != row.day[1]: 
-                    text += f'\n ---- Перенос дня с  {row.day[0]} на {row.day[1]}'
+                if not check (row.day): 
+                    text += f'\n ---- Перенос дня с  {DAYS[row.day[0]]} на {DAYS[row.day[1]]}'
 
-                if row.para[0] != row.para[1]: 
+                if not check(row.para): 
                     text += f'\n ---- Перенос пары с {PARAS[row.para[0]]} на {PARAS[row.para[1]]}'
 
-                if row.everyweek[0] != row.everyweek[1]: 
+                if not check(row.everyweek): 
                     if row.everyweek[1] == 2:
                         text += f'\n ---- Пара стала еженедельной'
                     if row.everyweek[1] == 1:
@@ -98,15 +99,15 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
             message = f' &#128309; <b>Сообщение об изменениях для группы:</b>\n&#10024; {", ".join(real_changes)}'  # склейка сообщений в одно сообщение
             bot.send_message (user_id, message, parse_mode='HTML')
 
-    '''for teacher_id in teachers_info:
+    for teacher_id in teachers_info:
         changes = teachers_info[teacher_id]
 
         telegram_ids = TEACHERS_TO_TELEGRAMS_IDS.get(teacher_id, [])
 
         # рассылаем сообщения об изменениях преподавателям
         for user_id in telegram_ids:
-            message = '	&#128309;' "<b>Сообщение об изменениях для преподавателя: </b>" '&#10024;' + " \n".join(changes)
-            bot.send_message (user_id, message, parse_mode='HTML')'''
+            message = f' &#128309; <b>Сообщение об изменениях для преподавателя: </b> &#10024; {", ".join(real_changes)}'
+            bot.send_message (user_id, message, parse_mode='HTML')
 
 
 get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS)
