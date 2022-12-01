@@ -4,7 +4,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
 
-from const import DAYS, GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, check
+from const import DAYS, GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, check, get_day_chenges, get_split
 
 TAG_RE = re.compile(r'<[^>]+>')
 
@@ -27,7 +27,7 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     , array_agg(schedule_id ORDER BY dbeg, everyweek, day, para) as schedule_id
     FROM schedule_v2
     WHERE dbeg in ('2022.09.26', '2022.10.03')
-    and 464439 = any (groups)
+    and 464332 = any (groups)
     and type = 'day'
     GROUP BY discipline_verbose, groups, teachers, nt
     """)
@@ -45,12 +45,19 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
         if row.groups_id[0] not in groups_info: # проверяем есть ли group_id в словарике groups_info
             groups_info[row.groups_id[0]] = [] # если нет то инициализируем пустым списком
         
-        # добавляем сообщение об изменениях группе 
-        if not check(row.day) or not check(row.para) or not check(row.everyweek):
-            pprint (row)
+        if len (row.day) % 2 == 0:
+            # добавляем сообщение об изменениях группе 
+            if not check(row.day) or not check(row.para) or not check(row.everyweek):
+                pprint (row)
+                groups_info[row.groups_id[0]].append(row)
+        else:
             groups_info[row.groups_id[0]].append(row)
 
+
     for row in rows:
+        if not row.teachers:
+            continue
+
         if row.teachers[0] not in teachers_info:
             teachers_info[row.teachers[0]] = []
 
@@ -82,7 +89,7 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
                 text = row.discipline_verbose
 
                 if not check (row.day): 
-                    text += f'\n ---- Перенос дня с  {DAYS[row.day[0]]} на {DAYS[row.day[1]]}'
+                    text += get_day_chenges(row.day)
 
                 if not check(row.para): 
                     text += f'\n ---- Перенос пары с {PARAS[row.para[0]]} на {PARAS[row.para[1]]}'

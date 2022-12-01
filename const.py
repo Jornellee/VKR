@@ -19,7 +19,7 @@ GROUPS_TO_TELEGRAMS_IDS = {
         "1005181834",
     ]
 ,
-    466015: [
+    464332: [
         "1005181834",
     ]
 }
@@ -60,3 +60,31 @@ def check(array):
     left, right = array[:len(array)//2], array[len(array)//2:]
     print (left == right)
     return left == right
+
+def get_split(everyweek):
+    n = sum(everyweek)//2
+    print(everyweek)
+    print(list(enumerate(everyweek)))
+    s = 0;
+    j = 0;
+    for (i, x) in enumerate(everyweek):
+        if s<=n:
+            s += x
+            j = i
+
+    print(j)
+    return j 
+
+def get_day_chenges(day): 
+    text = ''
+    for i in range(len(day)//2):
+        x1 = day[i];
+        x2 = day[i+len(day)//2];
+        if x1 != x2:
+          text += f'\n ---- Перенос дня с {DAYS[x1]} на {DAYS[x2]}'
+
+    return text
+    
+
+
+print(get_day_chenges([1,2,3,3,2,2]))
