@@ -3,6 +3,7 @@ from pprint import pprint
 import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
+import pymorphy2
 
 bot = telebot.TeleBot("5742810421:AAHtH3-j6keBuiceiV640-D6varvokAs2Ds", parse_mode=None)
 # bot.send_message (a,"Привет") 
@@ -56,6 +57,11 @@ DAYS = {
     13: 'суббота',
 }
 
+def to(word, padeg):
+    morph = pymorphy2.MorphAnalyzer()
+    word = morph.parse(word)[0].inflect({'sing', padeg}).word
+    return word
+
 def check(array):
     left, right = array[:len(array)//2], array[len(array)//2:]
     print (left == right)
@@ -84,7 +90,37 @@ def get_day_chenges(day):
           text += f'\n ---- Перенос дня с {DAYS[x1]} на {DAYS[x2]}'
 
     return text
-    
-
 
 print(get_day_chenges([1,2,3,3,2,2]))
+
+
+def get_para_chenges(para): 
+    text = ''
+    for i in range(len(para)//2):
+        x1 = para[i];
+        x2 = para[i+len(para)//2];
+        if x1 != x2:
+          text += f'\n ---- Перенос пары с {PARAS[x1]} на {PARAS[x2]}'
+
+    return text
+
+print(get_para_chenges([1,2,3,3,2,2]))
+
+
+def get_para_and_day_changes(day,para):
+    text =''
+    for i in range(len(para)//2):
+        p1 = para[i];
+        p2 = para[i+len(para)//2];
+        d1 = day[i];
+        d2 = day[i+len(day)//2];
+        if d1 == d2:
+            if p1 != p2:
+                text += f'\n ---- Перенос пары в {to(DAYS[d1],"accs")} с {PARAS[p1]} на {PARAS[p2]}'
+        else: 
+            if p1 != p2:
+                text += f'\n ---- Перенос пары с {to(DAYS[d1], "gent")} в {PARAS[p1]} на {to(DAYS[d2], "accs")} в {PARAS[p2]}'
+            else:
+                 text += f'\n ---- Перенос пары с {to(DAYS[d1], "gent")} в {PARAS[p1]} на {to(DAYS[d2], "accs")} в то же время '
+    return text
+
