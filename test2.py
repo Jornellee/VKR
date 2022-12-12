@@ -1,15 +1,15 @@
-n = 6;
-everyweek = [1,2,3,1,2,3];
+from datetime import date
+import pendulum
 
-print(everyweek)
-print(list(enumerate(everyweek)))
+from const import get_perenosi_date_range
 
 
-s = 0;
-j = 0;
-for (i, x) in enumerate(everyweek):
-    if s<=n:
-        s += x
-        j = i
+today = pendulum.now()
+d1 = today.start_of("week")
+d2 = d1.add(weeks=1)
+d1 = d1.strftime('%Y.%m.%d')
+d2 = d2.strftime('%Y.%m.%d')
+print(d1, d2)
 
-print(j)
+get_perenosi_date_range(pendulum.now())
+print (get_perenosi_date_range(pendulum.now()))

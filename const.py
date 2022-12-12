@@ -1,9 +1,11 @@
+from datetime import datetime
 import telebot
 from pprint import pprint
 import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
 import pymorphy2
+from pendulum import DateTime
 
 bot = telebot.TeleBot("5742810421:AAHtH3-j6keBuiceiV640-D6varvokAs2Ds", parse_mode=None)
 # bot.send_message (a,"Привет") 
@@ -64,7 +66,6 @@ def to(word, padeg):
 
 def check(array):
     left, right = array[:len(array)//2], array[len(array)//2:]
-    print (left == right)
     return left == right
 
 def get_split(everyweek):
@@ -118,9 +119,25 @@ def get_para_and_day_changes(day,para):
             if p1 != p2:
                 text += f'\n ---- Перенос пары в {to(DAYS[d1],"accs")} с {PARAS[p1]} на {PARAS[p2]}'
         else: 
+            if d1 in (2,3):
+                predlog = "со"
+            else: 
+                predlog = "с"
             if p1 != p2:
-                text += f'\n ---- Перенос пары с {to(DAYS[d1], "gent")} в {PARAS[p1]} на {to(DAYS[d2], "accs")} в {PARAS[p2]}'
+                text += f'\n ---- Перенос пары {predlog} {to(DAYS[d1], "gent")} в {PARAS[p1]} на {to(DAYS[d2], "accs")} в {PARAS[p2]}'
             else:
-                 text += f'\n ---- Перенос пары с {to(DAYS[d1], "gent")} в {PARAS[p1]} на {to(DAYS[d2], "accs")} в то же время '
+                 text += f'\n ---- Перенос пары {predlog} {to(DAYS[d1], "gent")} в {PARAS[p1]} на {to(DAYS[d2], "accs")} в то же время '
     return text
 
+
+def get_perenosi_date_range(date: DateTime):
+    date.isoweekday()
+    if date.isoweekday() >= 6:
+        d1 = date.add(weeks = 1).start_of("day")
+        d1 = d1.start_of("week")
+        d2 = d1.end_of("week")
+    else:
+        d1 = date.add(days = 1).start_of("day")
+        d2 = d1.end_of("week")
+
+    return d1, d2

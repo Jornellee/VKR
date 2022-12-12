@@ -11,6 +11,8 @@ TAG_RE = re.compile(r'<[^>]+>')
 def remove_tags(text):
     return TAG_RE.sub('', text)
 
+    
+
 def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
     # сессия - сеанс подключения к БД
     s = Session()

@@ -3,6 +3,7 @@ from pprint import pprint
 import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
+import pendulum
 
 from const import DAYS, GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, check, get_day_chenges, get_para_and_day_changes, get_para_chenges, get_split
 
@@ -14,6 +15,13 @@ def remove_tags(text):
 def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     # сессия - сеанс подключения к БД
     s = Session()
+
+    today = pendulum.now()
+    d1 = today.start_of("week")
+    d2 = d1.add(weeks=1)
+    d1 = d1.strftime('%Y.%m.%d')
+    d2 = d2.strftime('%Y.%m.%d')
+    print(d1, d2)
 
     # запускаем скрипт (показывает когда было/стало)
     rows = s.execute(f"""
