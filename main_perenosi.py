@@ -3,8 +3,10 @@ from pprint import pprint
 import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
+import pendulum
+from sqlalchemy.sql import text
 
-from const import GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot
+from const import GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, get_perenosi_date_range
 
 TAG_RE = re.compile(r'<[^>]+>')
 
@@ -17,13 +19,18 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
     # сессия - сеанс подключения к БД
     s = Session()
 
+    today = pendulum.now()
+    d1, d2 = get_perenosi_date_range(dbeg)
+    
     # запускаем скрипт (запрос чтобы вытащить переносы)
-    rows = s.execute(f"""
+    q = text (f"""
     SELECT s.groups as groups_id, q.type, s.groups_verbose, s.teachers, s.teachers_verbose, s.discipline_verbose
     FROM schedule_v2 s
     JOIN queries q on s.query_id = q.id
-    WHERE q.type in (2, 3,4) and s.dbeg = '{dbeg}'
+    WHERE q.type in (2, 3,4) and q.dt between :x and :y 
     """)
+    rows = s.execute (q, {"x": d1, "y": d2})
+    
 
     rows = list(rows)
 
@@ -74,4 +81,4 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
             bot.send_message (user_id, message, parse_mode='HTML')
 
 
-get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, "2022-09-26")
+get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.local(2022,9,26))

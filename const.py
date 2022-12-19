@@ -141,3 +141,10 @@ def get_perenosi_date_range(date: DateTime):
         d2 = d1.end_of("week")
 
     return d1, d2
+
+
+def get_changes_weeks_starts(date: DateTime):
+    d1 = date.start_of("week").start_of("day")
+    d2 = d1.add(weeks = 1)
+    return d1, d2
+

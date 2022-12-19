@@ -4,8 +4,9 @@ import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import re
 import pendulum
+from sqlalchemy.sql import text
 
-from const import DAYS, GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, check, get_day_chenges, get_para_and_day_changes, get_para_chenges, get_split
+from const import DAYS, GROUPS_TO_TELEGRAMS_IDS, PARAS, TEACHERS_TO_TELEGRAMS_IDS, Session, bot, check, get_changes_weeks_starts, get_day_chenges, get_para_and_day_changes, get_para_chenges, get_split
 
 TAG_RE = re.compile(r'<[^>]+>')
 
@@ -17,30 +18,27 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     s = Session()
 
     today = pendulum.now()
-    d1 = today.start_of("week")
-    d2 = d1.add(weeks=1)
-    d1 = d1.strftime('%Y.%m.%d')
-    d2 = d2.strftime('%Y.%m.%d')
-    print(d1, d2)
+    d1, d2 = get_changes_weeks_starts(today)
+      
 
     # запускаем скрипт (показывает когда было/стало)
-    rows = s.execute(f"""
+    q =  text(f"""
    SELECT discipline_verbose
-    , groups as groups_id
-    , teachers
+    , array(select abs(unnest(groups))) as groups_id
+    , array(select abs(unnest(teachers))) teachers
     , nt
+    , array_agg(dbeg) as dbeg
     , array_agg(day ORDER BY dbeg, everyweek, day, para) as day
     , array_agg(para ORDER BY dbeg, everyweek, day, para) as para
     , array_agg(everyweek ORDER BY dbeg, everyweek, day, para) as everyweek
     , array_agg(schedule_id ORDER BY dbeg, everyweek, day, para) as schedule_id
     FROM schedule_v2
-    WHERE dbeg in ('2022.09.26', '2022.10.03')
+    WHERE dbeg in (:x, :y)
     --and (464332 = any (groups) or -464332 = any (groups))
     and type = 'day'
     GROUP BY discipline_verbose, groups, teachers, nt
-
-
     """)
+    rows = s.execute (q, {"x": d1, "y": d2})
 
     rows = list(rows)
 
@@ -88,23 +86,29 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
 
             real_changes = [] 
             for row in changes: 
-                text = row.discipline_verbose
+                if len(set(row.dbeg)) <= 1:
+                    continue
+                text1 = row.discipline_verbose
 
                 if not check (row.day) or not check(row.para): 
-                    text += get_para_and_day_changes(row.day,row.para)
+                    text1 += get_para_and_day_changes(row.day,row.para)
 
-                if not check(row.everyweek): 
-                    if row.everyweek[1] == 2:
-                        text += f'\n ---- Пара стала еженедельной'
-                    if row.everyweek[1] == 1:
-                        text += f'\n ---- Пара стала через неделю'
+                try:
+                    if not check(row.everyweek): 
+                        if row.everyweek[1] == 2:
+                            text1 += f'\n ---- Пара стала еженедельной'
+                        if row.everyweek[1] == 1:
+                            text1 += f'\n ---- Пара стала через неделю'
+                except:
+                    print(row)
+                    raise
 
-
-                real_changes.append(text)
+                real_changes.append(text1)
             
-            changes_as_str = "\n ".join(real_changes)
-            message = f' &#128309; <b>Сообщение об изменениях для группы:</b>\n&#10024; {changes_as_str}'  # склейка сообщений в одно сообщение
-            bot.send_message (user_id, message, parse_mode='HTML')
+            if real_changes:
+                changes_as_str = "\n ".join(real_changes)
+                message = f' &#128309; <b>Сообщение об изменениях для группы:</b>\n&#10024; {changes_as_str}'  # склейка сообщений в одно сообщение
+                bot.send_message (user_id, message, parse_mode='HTML')
 
     for teacher_id in teachers_info:
         changes = teachers_info[teacher_id]
@@ -116,22 +120,26 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
 
             real_changes = [] 
             for row in changes: 
-                text = row.discipline_verbose
+                if len(set(row.dbeg)) <= 1:
+                    continue
+                text1 = row.discipline_verbose
 
                 if not check (row.day) or not check(row.para): 
-                    text += get_para_and_day_changes(row.day,row.para)
+                    text1 += get_para_and_day_changes(row.day,row.para)
 
                 if not check(row.everyweek): 
                     if row.everyweek[1] == 2:
-                        text += f'\n ---- Пара стала еженедельной'
+                        text1 += f'\n ---- Пара стала еженедельной'
                     if row.everyweek[1] == 1:
-                        text += f'\n ---- Пара стала через неделю'
+                        text1 += f'\n ---- Пара стала через неделю'
 
 
-                real_changes.append(text)
-            changes_as_str = "\n ".join(real_changes)
-            message = f' &#128309; <b>Сообщение об изменениях для преподавателя: </b> &#10024; {changes_as_str}'
-            bot.send_message (user_id, message, parse_mode='HTML')
+                real_changes.append(text1)
+
+            if real_changes:
+                changes_as_str = "\n ".join(real_changes)
+                message = f' &#128309; <b>Сообщение об изменениях для преподавателя: </b> &#10024; {changes_as_str}'
+                bot.send_message (user_id, message, parse_mode='HTML')
 
 
 get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS)
