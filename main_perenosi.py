@@ -19,12 +19,21 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
     # сессия - сеанс подключения к БД
     s = Session()
 
+    q =  text(f"""
+    SELECT id_7, obozn from real_groups
+	WHERE is_active = true""")
+
+    rows = s.execute (q,)
+    group_names = {i.id_7: i.obozn for i in rows}
+
     today = pendulum.now()
     d1, d2 = get_perenosi_date_range(dbeg)
+
+    print(d1, d2)
     
     # запускаем скрипт (запрос чтобы вытащить переносы)
     q = text (f"""
-    SELECT s.groups as groups_id, q.type, s.groups_verbose, s.teachers, s.teachers_verbose, s.discipline_verbose
+    SELECT DISTINCT s.groups as groups_id, q.type, s.groups_verbose, s.teachers, s.teachers_verbose, s.discipline_verbose
     FROM schedule_v2 s
     JOIN queries q on s.query_id = q.id
     WHERE q.type in (2, 3,4) and q.dt between :x and :y 
@@ -67,7 +76,7 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
 
         # рассылаем сообщения об переносах студентам
         for user_id in telegram_ids:
-            message = '	&#128308;' "<b>Сообщение о переносе для группы: </b>" '&#128221;' + " \n".join(perenosi) # склейка сообщений в одно сообщение
+            message = f"	&#128308; <b>Сообщение о переносе для группы {group_names[group_id]} </b>" '&#128221;' + " \n".join(perenosi) # склейка сообщений в одно сообщение
             bot.send_message (user_id, message, parse_mode='HTML')
 
     for teacher_id in teachers_info:
@@ -80,5 +89,3 @@ def get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dbeg):
             message = '	&#128308;' "<b>Сообщение о переносе для преподавателя: </b>" '&#128221;' + " \n".join(perenosi)
             bot.send_message (user_id, message, parse_mode='HTML')
 
-
-get_perenosi(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.local(2022,9,26))

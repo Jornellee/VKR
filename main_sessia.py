@@ -13,11 +13,11 @@ TAG_RE = re.compile(r'<[^>]+>')
 def remove_tags(text):
     return TAG_RE.sub('', text)
 
-def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
+def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
     # сессия - сеанс подключения к БД
     s = Session()
 
-    today = pendulum.now()   
+    today = dbeg   
     d0 = today.start_of("week").start_of("day")
     d1 = d0.add(weeks=1)
     d2 = d1.add(weeks=1)
@@ -39,10 +39,10 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
     groups_rows = list(groups_rows)
 
     for row in groups_rows:
-        if len(row.weeks) == 2:
-            groups_info [row.id] = "Следующая неделя зачетная"
-        elif len(row.weeks) == 1:
-            groups_info [row.id] = f" {row.id} Следующая неделя экзаменационная и пар не будет"
+        if row.weeks == [d0.date(),d1.date()]:
+            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя зачетная &#128540;"
+        elif row.weeks == [d0.date()]:
+            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя экзаменационная. Пар не будет &#128540;"
 
 
     #скрипт о начале сессии для преподавателей
@@ -72,4 +72,4 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
         for user_id in telegram_ids:
              bot.send_message (user_id, message, parse_mode='HTML')
 
-get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS)
+get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.local(2022,12,12))

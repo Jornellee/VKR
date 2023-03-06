@@ -13,13 +13,19 @@ TAG_RE = re.compile(r'<[^>]+>')
 def remove_tags(text):
     return TAG_RE.sub('', text)
 
-def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
+def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dt):
     # сессия - сеанс подключения к БД
     s = Session()
 
-    today = pendulum.now()
+    q =  text(f"""
+    SELECT id_7, obozn from real_groups
+	WHERE is_active = true""")
+
+    rows = s.execute (q,)
+    group_names = {i.id_7: i.obozn for i in rows}
+	
+    today = dt 
     d1, d2 = get_changes_weeks_starts(today)
-      
 
     # запускаем скрипт (показывает когда было/стало)
     q =  text(f"""
@@ -107,7 +113,7 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
             
             if real_changes:
                 changes_as_str = "\n ".join(real_changes)
-                message = f' &#128309; <b>Сообщение об изменениях для группы:</b>\n&#10024; {changes_as_str}'  # склейка сообщений в одно сообщение
+                message = f' &#128309; <b>Сообщение об изменениях для группы {group_names[group_id]}</b>\n&#10024; {changes_as_str}'  # склейка сообщений в одно сообщение
                 bot.send_message (user_id, message, parse_mode='HTML')
 
     for teacher_id in teachers_info:
@@ -142,4 +148,4 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS):
                 bot.send_message (user_id, message, parse_mode='HTML')
 
 
-get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS)
+get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.now())
