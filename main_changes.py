@@ -148,4 +148,4 @@ def get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, dt):
                 bot.send_message (user_id, message, parse_mode='HTML')
 
 
-get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.now())
+# get_changes(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.now())

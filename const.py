@@ -28,7 +28,10 @@ GROUPS_TO_TELEGRAMS_IDS = {
     ,
     464332: [  #ГМ-20
         "1005181834",
-    ]
+    ],
+    464444: [   #мой
+        "1005181834",
+    ],
 }
 
 TEACHERS_TO_TELEGRAMS_IDS = {

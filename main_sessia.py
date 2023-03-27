@@ -43,6 +43,9 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
             groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя зачетная &#128540;"
         elif row.weeks == [d0.date()]:
             groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя экзаменационная. Пар не будет &#128540;"
+        elif row.weeks == [d1.date()]:
+            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Начинается учеба, проверьте расписание &#128540;"
+
 
 
     #скрипт о начале сессии для преподавателей
@@ -72,4 +75,3 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
         for user_id in telegram_ids:
              bot.send_message (user_id, message, parse_mode='HTML')
 
-get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS, pendulum.local(2022,12,12))
