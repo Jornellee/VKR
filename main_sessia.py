@@ -13,18 +13,7 @@ TAG_RE = re.compile(r'<[^>]+>')
 def remove_tags(text):
     return TAG_RE.sub('', text)
 
-def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
-    # сессия - сеанс подключения к БД
-    s = Session()
-
-    today = dbeg   
-    d0 = today.start_of("week").start_of("day")
-    d1 = d0.add(weeks=1)
-    d2 = d1.add(weeks=1)
-
-    groups_info = {}
-    teachers_info = {}
-
+def fetch_groups_from_db(s, d0, d1, d2):
     #скрипт о начале сессии для студентов
     q =  text(f"""
     SELECT unnest(groups) id
@@ -38,16 +27,9 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
 
     groups_rows = list(groups_rows)
 
-    for row in groups_rows:
-        if row.weeks == [d0.date(),d1.date()]:
-            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя зачетная &#128540;"
-        elif row.weeks == [d0.date()]:
-            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя экзаменационная. Пар не будет &#128540;"
-        elif row.weeks == [d1.date()]:
-            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Начинается учеба, проверьте расписание &#128540;"
+    return groups_rows
 
-
-
+def fetch_teachers_from_db (s, d0, d1, d2):
     #скрипт о начале сессии для преподавателей
     q =  text(f"""
     SELECT unnest(teachers) id
@@ -61,12 +43,30 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
 
     teachers_rows = list(teachers_rows)
 
+    return teachers_rows 
+
+def prepare_groups_info (groups_rows, d0, d1):
+    groups_info = {}
+    for row in groups_rows:
+        if row.weeks == [d0.date(),d1.date()]:
+            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя зачетная &#128540;"
+        elif row.weeks == [d0.date()]:
+            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Следующая неделя экзаменационная. Пар не будет &#128540;"
+        elif row.weeks == [d1.date()]:
+            groups_info [row.id] = f" &#128681; <b>Важная информация: </b> &#128681; {row.id} Начинается учеба, проверьте расписание &#128540;"
+
+    return groups_info
+
+def prepare_teachers_info (teachers_rows):
+    teachers_info ={}
     for row in teachers_rows:
         if len(row.weeks) == 0:
             teachers_info [row.id] = f"{row.id} На следующей неделе пар не будет, проверьте расписание в личном кабинете"
 
+    return teachers_info 
 
-        # рассылаем сообщения о начале сессии
+def send_messages (groups_info):
+      # рассылаем сообщения о начале сессии
     for group_id in groups_info:
         message = groups_info[group_id]
         # вытащили список подписчиков данной группы group_id
@@ -74,4 +74,31 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
         # рассылаем сообщения о начале сессии
         for user_id in telegram_ids:
              bot.send_message (user_id, message, parse_mode='HTML')
+
+
+
+def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
+    # сессия - сеанс подключения к БД
+    s = Session()
+
+    today = dbeg   
+    d0 = today.start_of("week").start_of("day")
+    d1 = d0.add(weeks=1)
+    d2 = d1.add(weeks=1)
+
+    groups_rows = fetch_groups_from_db(s, d0, d1, d2)
+
+    groups_info = prepare_groups_info (groups_rows, d0, d1)
+   
+    teachers_rows = fetch_teachers_from_db (s, d0, d1, d2)
+
+    teachers_info = prepare_teachers_info (teachers_rows)
+
+    send_messages (groups_info)
+    
+
+    
+
+
+      
 
