@@ -88,10 +88,10 @@ def get_sessia(GROUPS_TO_TELEGRAMS_IDS, TEACHERS_TO_TELEGRAMS_IDS,dbeg):
 
     groups_rows = fetch_groups_from_db(s, d0, d1, d2)
 
+    teachers_rows = fetch_teachers_from_db (s, d0, d1, d2)
+    
     groups_info = prepare_groups_info (groups_rows, d0, d1)
    
-    teachers_rows = fetch_teachers_from_db (s, d0, d1, d2)
-
     teachers_info = prepare_teachers_info (teachers_rows)
 
     send_messages (groups_info)
